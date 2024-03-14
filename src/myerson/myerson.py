@@ -779,7 +779,7 @@ def explain(graph: torch_geometric.data.Data,
         model (torch.nn.Module): The graph neural network.
         sample_if_more_nodes_than (int, optional): Barrier for when to start
             sampling instead of exact calculations. Defaults to 20.
-        verbose (bool, optional): Wheter to log information to the output and
+        verbose (bool, optional): Whether to log information to the output and
             show progress bars. Defaults to False.
 
     Returns:

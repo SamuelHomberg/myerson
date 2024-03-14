@@ -1,3 +1,5 @@
+![Myerson logo banner](docs/source/images/logo_banner.svg "Myerson")
+
 [![test](https://github.com/SamuelHomberg/myerson/actions/workflows/test.yml/badge.svg)](https://github.com/SamuelHomberg/myerson/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/myerson/badge/?version=latest)](https://myerson.readthedocs.io/en/latest/?badge=latest)
 

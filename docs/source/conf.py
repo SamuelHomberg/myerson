@@ -21,6 +21,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx_rtd_theme', 
     'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel',
 ]
 
 templates_path = ['_templates']
@@ -33,8 +34,8 @@ exclude_patterns = []
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-# html_logo = ".svg"
-# html_favicon = '.svg'
-# html_theme_options = {
-#     'logo_only': True,
-# }
+html_logo = "images/logo.svg"
+html_favicon = 'images/logo.svg'
+html_theme_options = {
+    'logo_only': True,
+}
