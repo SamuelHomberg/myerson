@@ -629,7 +629,7 @@ class MyersonSampler(MyersonCalculator):
                 all_sampled_permutations.append(sampled_permutation_with_current_swapped_in_random_node)
                 all_sampled_permutations.append(np.append(sampled_permutation_with_current_swapped_in_random_node, node))
         # len(all_sampled_permutations): steps*2*len(self.grand_coalition)
-        self.log.info(f"Sampled {len(all_sampled_permutations)} of {math.factorial(len(self.grand_coalition)):.2e} permutations.")
+        self.log.info(f"Sampled {len(all_sampled_permutations)} of {math.factorial(len(self.grand_coalition))} permutations.")
 
         return random_node, permutations_without_random_node, all_sampled_permutations
 
