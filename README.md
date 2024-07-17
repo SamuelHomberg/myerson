@@ -1,6 +1,6 @@
 ![Myerson logo banner](docs/source/images/logo_banner_embedded.svg "Myerson")
 
-[![test](https://github.com/SamuelHomberg/myerson/actions/workflows/test.yml/badge.svg)](https://github.com/SamuelHomberg/myerson/actions/workflows/test.yml)
+[![test](https://github.com/kochgroup/myerson/actions/workflows/test.yml/badge.svg)](https://github.com/kochgroup/myerson/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/myerson/badge/?version=latest)](https://myerson.readthedocs.io/en/latest/?badge=latest)
 
 # Calculate Myerson values and explain GNNs
