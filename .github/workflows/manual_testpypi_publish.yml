@@ -1,3 +1,5 @@
+name: manual testpypi publish
+
 on: 
   workflow_dispatch:
 
