@@ -2,6 +2,8 @@
 
 from .myerson import MyersonCalculator, MyersonSampler
 try:
+    import torch
+    import torch_geometric
     from .myerson import MyersonExplainer, MyersonSamplingExplainer
 except:
     pass
