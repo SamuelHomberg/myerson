@@ -1,6 +1,13 @@
+try:
+    import torch
+except:
+    print("Could not import torch; explainers will fail.")
+try:
+    import torch_geometric
+except:
+    print("Could not import torch; explainers will fail.")
+
 import sys
-import torch
-import torch_geometric
 import math
 import networkx as nx
 import numpy as np
