@@ -34,5 +34,5 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 
 [project.urls]
-Source = "https://github.com/SamuelHomberg/myerson"
+Source = "https://github.com/kochgroup/myerson"
 Documentation = "https://myerson.readthedocs.io/en/latest/"
