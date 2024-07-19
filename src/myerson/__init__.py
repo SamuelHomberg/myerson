@@ -10,4 +10,4 @@ try:
 except ImportError:
     warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
