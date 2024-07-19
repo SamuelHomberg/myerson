@@ -1,4 +1,4 @@
-.. figure:: images/logo_banner.svg
+.. figure:: images/logo_banner_embedded.svg
    :alt: Myerson
 
 
@@ -23,11 +23,37 @@ Therfore, Monte Carlo sampling techniques were implemented to approximate the My
 Installation
 ============
 
-Install the package with the following command:
+Install the complete package with one of the following commands:
 
 .. code-block::
 
-   pip install -i https://test.pypi.org/simple/ myerson
+   # pip
+   pip install myerson[explain]
+
+.. or
+
+.. .. code-block::
+
+..    # conda / mamba
+..    conda install myerson
+
+..    # manually install pytorch dependencies, for example:
+..    conda install pytorch torchvision torchaudio cpuonly -c pytorch
+..    conda install conda install pyg -c pyg
+
+If you are only interested in the game theoretic part you don't need to install PyTorch:
+
+.. code-block::
+
+   # pip 
+   pip install myerson
+
+.. or
+
+.. .. code-block::
+
+..    # conda / mamba
+..    conda install myerson
 
 Examples
 ========
