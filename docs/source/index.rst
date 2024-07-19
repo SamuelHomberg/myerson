@@ -69,5 +69,5 @@ Contents
    Home <self>
    Get started <get_started>
    Documentation <documentation>
-   GitHub ⧉ <https://github.com/SamuelHomberg/myerson>
-   ChemRxiv ⧉ <https://chemrxiv.org/engage/chemrxiv/article-details/6456c89707c3f0293753101d>
+   GitHub ⧉ <https://github.com/kochgroup/myerson>
+   ChemRxiv ⧉ <https://chemrxiv.org/engage/chemrxiv/article-details/668c3885c9c6a5c07aaca81e>
