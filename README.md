@@ -12,11 +12,41 @@ A graph neural network (GNN) can be treated as a coalition function for a game a
 Calculating the Myerson value scales exponentially with bigger graphs / more players. Therfore, Monte Carlo sampling techniques were implemented to approximate the Myerson values.
 
 ## Installation
-Install the package with the following command:
+For a complete install of the package execute one of the following commands:
 
 ```bash
+# pip
+pip install myerson[explain]
+```
+
+<!-- 
+or
+
+```bash
+# conda / mamba
+conda install myerson
+
+# manually install pytorch dependencies, for example:
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+conda install conda install pyg -c pyg
+```
+ -->
+
+If you are only interested in the game theoretic part you don't need to install PyTorch:
+
+```bash 
+# pip 
 pip install myerson
 ```
+
+<!-- 
+or
+
+```bash
+# conda / mamba
+conda install myerson
+```
+ -->
 
 ## Examples and Documentation
 Example uses can be found [here](https://myerson.readthedocs.io/en/latest/get_started.html#get-started). The full documentation can be found at https://myerson.readthedocs.io/.
