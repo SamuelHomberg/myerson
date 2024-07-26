@@ -30,11 +30,6 @@ class MyersonExplainer(MyersonCalculator):
                 coalition_function: torch.nn.Module,
                 disable_tqdm: bool=True) -> None:
         """Instantiate the class.
-
-        Args:
-            graph (torch_geometric.data.Data): _description_
-            coalition_function (torch.nn.Module): _description_
-            disable_tqdm (bool, optional): _description_. Defaults to True.
         """
 
         self.disable_tqdm = disable_tqdm
