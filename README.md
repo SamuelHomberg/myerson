@@ -21,7 +21,7 @@ pip install myerson[explain]
 # conda / mamba
 conda install myerson
 
-# for conda / mamba, you need to manually install pytorch dependencies, for example:
+# for conda / mamba, you need to manually install pytorch dependencies
 conda install pytorch torchvision torchaudio cpuonly -c pytorch
 conda install conda install pyg -c pyg
 ```
