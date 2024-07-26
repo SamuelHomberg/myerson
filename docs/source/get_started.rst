@@ -11,6 +11,8 @@ While the popular solution concept of the *Shapley values* assumes that all play
 Here, the cooperation structure is modeled by a graph, where links between nodes indicate the ability to cooperate. 
 A game itself is defined by a the *coalition function*, which is best explained by an example game.
 
+.. _gloves_game:
+
 The Gloves Game
 ^^^^^^^^^^^^^^^
 
@@ -119,31 +121,93 @@ For players :math:`2` and :math:`3` this results in :math:`\text{My}_2\,(v) = \f
 Code Examples
 -------------
 
-Calculate the Myerson Values Game Theory
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Calculate the Myerson Values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- explain the gloves game
-- picture
-- latex formula for handcalculation
-- code 
-
-Calculation of the three player example for the gloves game (*vide supra*).
+Calculation of the three player example for the gloves game (:ref:`vide supra <gloves_game>`).
 
 .. code-block:: python
+
+    import networkx as nx
+    from myerson import MyersonCalculator, MyersonSampler
+
+    # define L--R--R graph
+    graph = nx.Graph()
+    graph.add_edges_from([(1, 2), (2, 3)])
+    graph.add_node(1, glove="left")
+    graph.add_node(2, glove="right")
+    graph.add_node(3, glove="right")
+
+    # define coalition function
+    def gloves_game_coalition_function(coalition: tuple,
+                                       nx_graph: nx.classes.graph.Graph) -> float:
+        # the graph structure should have no influence on the coalition function
+        # we only inclued it to get more information from the players
+        if len(coalition) <= 1:
+            return 0.
+        gloves = nx.get_node_attributes(nx_graph, 'glove')
+        r = sum([1 for k, v in gloves.items() if (v=="right" and k in coalition)])
+        l = sum([1 for k, v in gloves.items() if (v=="left" and k in coalition)])
+        return float(min(r, l))
     
-    example = "example text"
+    # calculate the exact Myerson values
+    myerson_calculator = MyersonCalculator(graph=graph,
+        coalition_function=gloves_game_coalition_function)
+    my_values = myerson_calculator.calculate_all_myerson_values()
 
-Explain a GNN Prediction Exactly
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # calculate the Myerson values by sampling
+    myerson_sampler = MyersonSampler(graph=self.graph,
+        coalition_function=self.gloves_game_coalition_function,
+        number_of_samples=1000,
+        seed=42,
+        disable_tqdm=True)
+    my_values_sampled = myerson_sampler.sample_all_myerson_values()
+    
+    # print results
+    solution = {1: 0.5, 2: 0.5, 3: 0.}
+    print(f"Solution: {solution}")
+    print(f"Exact Myerson values: {my_values}")
+    print(f"Sampled Myerson values: {my_values_sampled}")
 
-- description
-- code
+Explain a GNN Prediction
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approximate Explanations for a GNN Prediction 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
 
-- description
-- code
+    import torch
+    import torch_geometric
+    from myerson import MyersonExplainer, MyersonSamplingExplainer
+
+    # define or load a graph to be explained
+    edge_index = torch.tensor([[0, 1, 1, 2],
+                                [1, 0, 2, 1]], dtype=torch.long)
+    x = torch.tensor([[-1], [0], [1]], dtype=torch.float)
+    graph = torch_geometric.data.Data(x=x, edge_index=edge_index)
+
+    # define or load a model
+    class DummyModel(torch.nn.Module):
+        # init with PyG layers
+
+        def forward(self, x, edge_index, batch):
+            return sum(x)
+    model = DummyModel()
+
+    # explain prediction
+    explainer = MyersonExplainer(graph=graph, coalition_function=model,
+                                disable_tqdm=False)
+    my_values = explainer.calculate_all_myerson_values()
+
+    # explain prediction using sampling
+    sampler = MyersonSamplingExplainer(graph=graph, coalition_function=model,
+                                    seed=42, number_of_samples=1000,
+                                    disable_tqdm=False)
+    sampled_my_values = sampler.sample_all_myerson_values()
+    print(f"{my_values=}")
+    print(f"{sampled_my_values=}")
+
+
 
 Visualizing Explanations on Molecular Structures
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We used modified functions from the RDKit package to map the Myerson values as a heatmap onto a molecular structure. For an implementation look `here <https://github.com/kochgroup/myerson_results>`_.
