@@ -23,42 +23,34 @@ Therfore, Monte Carlo sampling techniques were implemented to approximate the My
 Installation
 ============
 
-Install the complete package with one of the following commands:
+Install the complete package with PyTorch dependencies using one of the following commands:
 
-.. code-block::
+.. code-block:: bash
 
    # pip
    pip install myerson[explain]
 
-.. or
+   # conda / mamba
+   conda install myerson
 
-.. .. code-block::
-
-..    # conda / mamba
-..    conda install myerson
-
-..    # manually install pytorch dependencies, for example:
-..    conda install pytorch torchvision torchaudio cpuonly -c pytorch
-..    conda install conda install pyg -c pyg
+   # for conda / mamba, you need to manually install pytorch dependencies, for example:
+   conda install pytorch torchvision torchaudio cpuonly -c pytorch
+   conda install conda install pyg -c pyg
 
 If you are only interested in the game theoretic part you don't need to install PyTorch:
 
-.. code-block::
+.. code-block:: bash
 
    # pip 
    pip install myerson
 
-.. or
-
-.. .. code-block::
-
-..    # conda / mamba
-..    conda install myerson
+   # conda / mamba
+   conda install myerson
 
 Examples
 ========
 
-For examples have a look in the :ref:`get started` section.
+For example code have a look on the :ref:`get started` page.
 
 
 Contents
