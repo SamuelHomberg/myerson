@@ -1,5 +1,6 @@
 import unittest
-from myerson import MyersonCalculator, MyersonExplainer, MyersonSampler, MyersonSamplingExplainer
+from myerson import MyersonCalculator, MyersonExplainer
+from myerson import MyersonSampler, MyersonSamplingExplainer
 import networkx as nx
 import torch
 from .testmodels import GATConvModel
@@ -13,7 +14,8 @@ def rename_state_dict_keys(state_dict, device='cuda:0'):
     for k in state_dict:
         new_key = '.'.join(k.split('.')[1:])
         new_dict.update({new_key: state_dict[k]})
-    if device == 'cpu':
+    # if device == 'cpu':
+    if True:
         newer_dict = OrderedDict()
         for k in new_dict:
             if 'lin_dst' in k:
