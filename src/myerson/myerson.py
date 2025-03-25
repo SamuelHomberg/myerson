@@ -259,7 +259,7 @@ class MyersonCalculator():
             my_val = self.calculate_single_myerson_value(node, self.grand_coalition,
                                                   self.coalitions, self.coalitions_to_worth)
             my_values.update({node: my_val})
-        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in my_values.items()])
+        log_string = "".join([f"\t{k}: {v}\n" for k, v in my_values.items()])
         self.log.info(f"Myerson Values:\n{log_string}")
         return my_values
 
