@@ -6,6 +6,7 @@ try:
     import torch
     import torch_geometric
     from .myerson_explain import MyersonExplainer, MyersonSamplingExplainer
+    from .myerson_explain import MyersonClassExplainer, MyersonSamplingClassExplainer
     from .myerson_explain import explain
 except ImportError:
     warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
