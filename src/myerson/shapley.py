@@ -167,3 +167,203 @@ class ShapleyCalculator():
 
         self.coalitions_to_worth \
             = self.calculate_worth_of_coalitions(self.coalitions)
+
+class MyersonSampler(MyersonCalculator):
+    r"""A class approximating the Myerson value using Monte Carlo sampling.
+        The Myerson values are approximated by randomly sampling from all  
+        permutations needed to calculate the Shapley value:
+
+        .. math::
+
+            \text{Sh}_i\,({v}) = \frac{1}{|N|!}\; \sum_R \big({v}\,(P_i^R \cup \{i\}) - {v}(P_i^R)\big)
+
+        For efficiencies sake, the sampled permutations are transformed into
+        the corresponding coalitions.
+
+    Args:
+        graph (nx.classes.graph.Graph): The coalition structure of the game.
+        coalition_function (Callable): The coalition for which to calculate
+            the payoff of the game. Expects a coalition (tuple of node
+            indices) and a graph which contains additional information on
+            the players to decide on the payoff. 
+        seed (None | int, optional): Seed for randomness. Defaults to None.
+        number_of_samples (int, optional): Number of sampling steps. Defaults to 1000.
+        disable_tqdm (bool, optional): Disables progress bar. Defaults to True.
+    """
+    def __init__(self,
+                 graph: nx.classes.graph.Graph,
+                 coalition_function: Callable,
+                 seed: None | int = None, 
+                 number_of_samples: int = 1000,
+                 disable_tqdm: bool=True) -> None:
+
+        self.disable_tqdm = disable_tqdm
+        self.log = logging.getLogger("MyersonSampler")
+        self.nx_graph = graph
+        self.grand_coalition = list(graph.nodes()) # alias: set of players / set of nodes / F
+        self.coalition_function = coalition_function
+        self.seed = seed
+        self.rng = np.random.default_rng(seed)
+        self.number_of_samples = number_of_samples
+        """Instantiates the class.
+        """
+
+    @staticmethod
+    def _replace_in_array(array: np.ndarray, value_to_replace, value_to_replace_with) -> np.ndarray:
+        """Replace a value in an array with a different value.
+
+        Args:
+            array (np.ndarray): The array.
+            value_to_replace (int): The value to replace.
+            value_to_replace_with (int): The value to replace with.
+
+        Returns:
+            np.ndarray: The array with the replace value if it was found, else
+                the original array.
+        """
+        # Convert to a flat array to work with a single loop for any dimension
+        flat_array = array.ravel().copy()
+        # Find the index of the first occurrence of value_to_replace
+        index = np.where(flat_array == value_to_replace)[0]
+        if index.size > 0:  # Check if the value was found
+            flat_array[index[0]] = value_to_replace_with  # Replace the first occurrence
+        # Reshape back to original array's shape
+        return flat_array.reshape(array.shape)
+
+    def reset_rng(self):
+        """Reset random number generator to seed.
+        """
+        self.rng = np.random.default_rng(self.seed)
+
+    def sample_permutations(self, number_of_samples: int):
+        """Uniformly sample permutations from all possible permutations. Samples
+        `number_of_samples`*2*`number_of_nodes` permutations in total.
+
+        Args:
+            number_of_samples (int): How many sample steps should be carried out.
+
+        Returns:
+            tuple(int, list[np.ndarray], list[np.ndarray]): A randomly chosen 
+                node, the sampled permutations without the random node, all the
+                sampled permutations.
+        """
+        nodes_array = np.array(self.grand_coalition)
+        random_node = self.rng.choice(nodes_array)
+
+        self.log.info(f"Sampling {number_of_samples} steps.")
+        permutations_without_random_node = []
+        for i in tqdm(range(number_of_samples),
+                      desc="Sample permutations without random node",
+                      disable=self.disable_tqdm):
+            random_permutation_size: int = self.rng.integers(0, len(nodes_array))  
+            nodes_array_without_random_node = nodes_array.copy()
+            indices_to_delete = np.where(nodes_array_without_random_node == random_node)
+            nodes_array_without_random_node = np.delete(nodes_array_without_random_node,
+                                                        indices_to_delete)
+            sampled_permutation_without_random_node = self.rng.choice(nodes_array_without_random_node,
+                                                        size=random_permutation_size,
+                                                        replace=False)
+            self.rng.shuffle(sampled_permutation_without_random_node)
+            permutations_without_random_node.append(sampled_permutation_without_random_node)
+
+        all_sampled_permutations = []
+        for permutation in tqdm(permutations_without_random_node,
+                         desc="Sample permutations containing random node",
+                         disable=self.disable_tqdm):
+            for node_idx, node in enumerate(nodes_array):
+                sampled_permutation_with_current_swapped_in_random_node = permutation.copy()
+                sampled_permutation_with_current_swapped_in_random_node = \
+                self._replace_in_array(sampled_permutation_with_current_swapped_in_random_node,
+                                       node, random_node)
+                all_sampled_permutations.append(sampled_permutation_with_current_swapped_in_random_node)
+                all_sampled_permutations.append(np.append(sampled_permutation_with_current_swapped_in_random_node, node))
+        # len(all_sampled_permutations): steps*2*len(self.grand_coalition)
+        self.log.info(f"Sampled {len(all_sampled_permutations)} of {math.factorial(len(self.grand_coalition))} permutations.")
+
+        return random_node, permutations_without_random_node, all_sampled_permutations
+
+    def get_coalitions_from_permutations(self, permutations: list[np.ndarray]):
+        """Get the set of coalitions from the different (sampled) permutations.
+
+        Args:
+            permutations (list[np.ndarray]): The permutations.
+
+        Returns:
+            list[tuple]: The sampled coalitions.
+        """
+        all_sampled_coalitions = list(set([tuple(np.sort(x)) for x in permutations]))
+        self.log.info(f"Sampled {len(all_sampled_coalitions)} of {2**len(self.grand_coalition)} coalitions.")
+        return all_sampled_coalitions
+
+    def sample_all_mappings(self) -> None:
+        """Samples permutations, corresponding coalitions, graph restricted
+        coalitions, and their associated worths as class attributes:
+
+            * `self.random_node` (int) 
+            * `self.permutations_without_random_node` (list[np.ndarray])
+            * `self.all_sampled_permutations` (list[np.ndarray])
+            * `self.coalitions` (list[tuple])
+            * `self.graph_restricted_coalitions` (set[tuple])
+            * `self.coalitions_to_graph_restricted_coalitions` (dict)
+            * `self.graph_restricted_coalitions_to_worth` (dict)
+            * `self.coalitions_to_worth` (dict)
+        """
+        self.random_node, self.permutations_without_random_node, self.all_sampled_permutations \
+            = self.sample_permutations(self.number_of_samples)
+
+        self.coalitions = self.get_coalitions_from_permutations(self.all_sampled_permutations)
+
+        self.graph_restricted_coalitions, self.coalitions_to_graph_restricted_coalitions \
+            = self.calculate_graph_restricted_coalitions(self.coalitions, self.nx_graph)
+
+        self.graph_restricted_coalitions_to_worth \
+            = self.calculate_worth_of_graph_restricted_coalitions(self.graph_restricted_coalitions)
+
+        self.coalitions_to_worth \
+            = self.map_coalition_to_worth(self.coalitions, 
+                                          self.coalitions_to_graph_restricted_coalitions,
+                                          self.graph_restricted_coalitions_to_worth)
+
+    def sample_all_myerson_values(self) -> dict:
+        """Use Monte Carlo sampling to approximate the Myerson values for every
+        node / player in the graph.
+
+        Returns:
+            dict: Mapping of each node index to the sampled Myerson value.
+        """
+        self.sample_all_mappings()
+        nodes_array = np.array(self.grand_coalition)
+        my_values = np.zeros(len(nodes_array), dtype=float)
+        self.log.info(f"Calculating sampled Myerson values.")
+        for permutation in tqdm(self.permutations_without_random_node,
+                              disable=self.disable_tqdm,
+                              desc="Calculate sampled Myerson values"):
+            for node_idx, node in enumerate(nodes_array):
+
+                sampled_permutation_with_current_swapped_in_random_node = permutation.copy()
+                sampled_permutation_with_current_swapped_in_random_node \
+                    = self._replace_in_array(sampled_permutation_with_current_swapped_in_random_node,
+                                             node,
+                                             self.random_node)
+
+                worth_with_node = self.coalitions_to_worth[tuple(np.sort(np.append(sampled_permutation_with_current_swapped_in_random_node, node)))]
+                worth_without_node = self.coalitions_to_worth[tuple(np.sort(sampled_permutation_with_current_swapped_in_random_node))]
+                my_values[node_idx] = (my_values[node_idx] + worth_with_node - worth_without_node)
+
+        my_values = my_values / self.number_of_samples
+        my_values = {i: float(my_i) for i, my_i in enumerate(my_values)}
+        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in my_values.items()])
+        self.log.info(f"Sampled Myerson Values:\n{log_string}")
+        return my_values
+
+    def calculate_all_myerson_values(self) -> None:
+        """Not implemented for sampling class.
+
+        Raises:
+            NotImplementedError: The MyersonSampler only has the
+                `sample_all_myerson_values()` method. To accuratly calculate the
+                Myerson values, please use the `MyersonCalculator` class.
+        """
+        raise NotImplementedError("""The MyersonSampler only has the `sample_all_myerson_values()` method.
+                     To accuratly calculate the Myerson values,
+                     please use the `MyersonCalculator` class.""")
