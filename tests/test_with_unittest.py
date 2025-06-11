@@ -186,11 +186,11 @@ class TestMyersonExplainer(unittest.TestCase):
         device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         cls.model = GATConvModel(dim_in=5, dim_out=1)
         with open("tests/testmodelparams.ckpt", "rb") as f:
-            params = torch.load(f, map_location=torch.device(device))
+            params = torch.load(f, map_location=torch.device(device), weights_only=True)
         state_dict = rename_state_dict_keys(params['state_dict'], device)
         cls.model.load_state_dict(state_dict)
         with open("tests/testgraph.pt", "rb") as f:
-            cls.graph = torch.load(f, map_location=torch.device(device))
+            cls.graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
         cls.solution = {0: 0.3334993031053314,
                         1: 0.32414250585531335,
@@ -225,11 +225,11 @@ class TestMyersonSamplingExplainer(unittest.TestCase):
         device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
         cls.model = GATConvModel(dim_in=5, dim_out=1)
         with open("tests/testmodelparams.ckpt", "rb") as f:
-            params = torch.load(f, map_location=torch.device(device))
+            params = torch.load(f, map_location=torch.device(device), weights_only=True)
         state_dict = rename_state_dict_keys(params['state_dict'], device)
         cls.model.load_state_dict(state_dict)
         with open("tests/testgraph.pt", "rb") as f:
-            cls.graph = torch.load(f, map_location=torch.device(device))
+            cls.graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
         cls.solution = {0: 0.3334993031053314,
                         1: 0.32414250585531335,
@@ -267,7 +267,7 @@ class TestMyersonClassExplainer(unittest.TestCase):
         last_params = torch.tensor([0.0366, -0.0206, -0.0398])
         assert(torch.allclose(last_params, list(cls.model.parameters())[-1], atol=0.0001)), f"{last_params=}, {list(cls.model.parameters())[-1].detach()=}"
         with open("tests/testgraph.pt", "rb") as f:
-            cls.graph = torch.load(f, map_location=torch.device(device))
+            cls.graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
         cls.solution = {0: torch.tensor([[-0.1079,  0.0471, -0.0231]]),
                         1: torch.tensor([[-0.1079,  0.0464, -0.0229]]),
@@ -297,7 +297,7 @@ class TestMyersonSamplingClassExplainer(unittest.TestCase):
         last_params = torch.tensor([0.0366, -0.0206, -0.0398])
         assert(torch.allclose(last_params, list(cls.model.parameters())[-1], atol=0.0001)), f"{last_params=}, {list(cls.model.parameters())[-1].detach()=}"
         with open("tests/testgraph.pt", "rb") as f:
-            cls.graph = torch.load(f, map_location=torch.device(device))
+            cls.graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
         cls.solution = {0: torch.tensor([[-0.1079,  0.0471, -0.0231]]),
                         1: torch.tensor([[-0.1079,  0.0464, -0.0229]]),
