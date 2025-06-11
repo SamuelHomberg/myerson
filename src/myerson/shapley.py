@@ -21,7 +21,7 @@ class ShapleyCalculator():
 
     Args:
         graph (nx.classes.graph.Graph): The players of the game. The graph
-            structure (edges) are not used for the shapley value.
+            structure (edges) are not used for the Shapley value.
         coalition_function (Callable): The coalition for which to calculate
             the payoff of the game. Expects a coalition (tuple of node
             indices) and a graph which contains additional information on
@@ -168,10 +168,10 @@ class ShapleyCalculator():
         self.coalitions_to_worth \
             = self.calculate_worth_of_coalitions(self.coalitions)
 
-class MyersonSampler(MyersonCalculator):
-    r"""A class approximating the Myerson value using Monte Carlo sampling.
-        The Myerson values are approximated by randomly sampling from all  
-        permutations needed to calculate the Shapley value:
+class ShapleySampler(ShapleyCalculator):
+    r"""A class approximating the Shapley value using Monte Carlo sampling.
+        Approximated by randomly sampling from all  permutations needed to
+        calculate the Shapley value:
 
         .. math::
 
@@ -181,7 +181,8 @@ class MyersonSampler(MyersonCalculator):
         the corresponding coalitions.
 
     Args:
-        graph (nx.classes.graph.Graph): The coalition structure of the game.
+        graph (nx.classes.graph.Graph): The players of the game. The graph
+            structure (edges) are not used for the Shapley value.
         coalition_function (Callable): The coalition for which to calculate
             the payoff of the game. Expects a coalition (tuple of node
             indices) and a graph which contains additional information on
@@ -198,7 +199,7 @@ class MyersonSampler(MyersonCalculator):
                  disable_tqdm: bool=True) -> None:
 
         self.disable_tqdm = disable_tqdm
-        self.log = logging.getLogger("MyersonSampler")
+        self.log = logging.getLogger("ShapleySampler")
         self.nx_graph = graph
         self.grand_coalition = list(graph.nodes()) # alias: set of players / set of nodes / F
         self.coalition_function = coalition_function
@@ -296,16 +297,13 @@ class MyersonSampler(MyersonCalculator):
         return all_sampled_coalitions
 
     def sample_all_mappings(self) -> None:
-        """Samples permutations, corresponding coalitions, graph restricted
-        coalitions, and their associated worths as class attributes:
+        """Samples permutations, corresponding coalitions and their associated
+            worths as class attributes:
 
             * `self.random_node` (int) 
             * `self.permutations_without_random_node` (list[np.ndarray])
             * `self.all_sampled_permutations` (list[np.ndarray])
             * `self.coalitions` (list[tuple])
-            * `self.graph_restricted_coalitions` (set[tuple])
-            * `self.coalitions_to_graph_restricted_coalitions` (dict)
-            * `self.graph_restricted_coalitions_to_worth` (dict)
             * `self.coalitions_to_worth` (dict)
         """
         self.random_node, self.permutations_without_random_node, self.all_sampled_permutations \
@@ -313,31 +311,22 @@ class MyersonSampler(MyersonCalculator):
 
         self.coalitions = self.get_coalitions_from_permutations(self.all_sampled_permutations)
 
-        self.graph_restricted_coalitions, self.coalitions_to_graph_restricted_coalitions \
-            = self.calculate_graph_restricted_coalitions(self.coalitions, self.nx_graph)
+        self.coalitions_to_worth = self.calculate_worth_of_coalitions(self.coalitions)
 
-        self.graph_restricted_coalitions_to_worth \
-            = self.calculate_worth_of_graph_restricted_coalitions(self.graph_restricted_coalitions)
-
-        self.coalitions_to_worth \
-            = self.map_coalition_to_worth(self.coalitions, 
-                                          self.coalitions_to_graph_restricted_coalitions,
-                                          self.graph_restricted_coalitions_to_worth)
-
-    def sample_all_myerson_values(self) -> dict:
-        """Use Monte Carlo sampling to approximate the Myerson values for every
+    def sample_all_shapley_values(self) -> dict:
+        """Use Monte Carlo sampling to approximate the Shapley values for every
         node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the sampled Myerson value.
+            dict: Mapping of each node index to the sampled Shapley value.
         """
         self.sample_all_mappings()
         nodes_array = np.array(self.grand_coalition)
-        my_values = np.zeros(len(nodes_array), dtype=float)
-        self.log.info(f"Calculating sampled Myerson values.")
+        sh_values = np.zeros(len(nodes_array), dtype=float)
+        self.log.info(f"Calculating sampled Shapley values.")
         for permutation in tqdm(self.permutations_without_random_node,
                               disable=self.disable_tqdm,
-                              desc="Calculate sampled Myerson values"):
+                              desc="Calculate sampled Shapley values"):
             for node_idx, node in enumerate(nodes_array):
 
                 sampled_permutation_with_current_swapped_in_random_node = permutation.copy()
@@ -348,22 +337,22 @@ class MyersonSampler(MyersonCalculator):
 
                 worth_with_node = self.coalitions_to_worth[tuple(np.sort(np.append(sampled_permutation_with_current_swapped_in_random_node, node)))]
                 worth_without_node = self.coalitions_to_worth[tuple(np.sort(sampled_permutation_with_current_swapped_in_random_node))]
-                my_values[node_idx] = (my_values[node_idx] + worth_with_node - worth_without_node)
+                sh_values[node_idx] = (sh_values[node_idx] + worth_with_node - worth_without_node)
 
-        my_values = my_values / self.number_of_samples
-        my_values = {i: float(my_i) for i, my_i in enumerate(my_values)}
-        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in my_values.items()])
-        self.log.info(f"Sampled Myerson Values:\n{log_string}")
-        return my_values
+        sh_values = sh_values / self.number_of_samples
+        sh_values = {i: float(sh_i) for i, sh_i in enumerate(sh_values)}
+        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in sh_values.items()])
+        self.log.info(f"Sampled Shapley Values:\n{log_string}")
+        return sh_values
 
-    def calculate_all_myerson_values(self) -> None:
+    def calculate_all_shapley_values(self) -> None:
         """Not implemented for sampling class.
 
         Raises:
-            NotImplementedError: The MyersonSampler only has the
-                `sample_all_myerson_values()` method. To accuratly calculate the
-                Myerson values, please use the `MyersonCalculator` class.
+            NotImplementedError: The ShapleySampler only has the
+                `sample_all_shapley_values()` method. To accuratly calculate the
+                Shapley values, please use the `ShapleyCalculator` class.
         """
-        raise NotImplementedError("""The MyersonSampler only has the `sample_all_myerson_values()` method.
-                     To accuratly calculate the Myerson values,
-                     please use the `MyersonCalculator` class.""")
+        raise NotImplementedError("""The ShapleySampler only has the `sample_all_shapley_values()` method.
+                     To accuratly calculate the Shapley values,
+                     please use the `ShapleyCalculator` class.""")
