@@ -9,6 +9,9 @@ try:
     from .myerson_explain import MyersonExplainer, MyersonSamplingExplainer
     from .myerson_explain import MyersonClassExplainer, MyersonSamplingClassExplainer
     from .myerson_explain import explain
+
+    from .shapley_explain import ShapleyExplainer, ShapleySamplingExplainer
+    from .shapley_explain import ShapleyClassExplainer, ShapleySamplingClassExplainer
 except ImportError:
     warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
 
