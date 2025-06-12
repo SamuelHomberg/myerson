@@ -356,3 +356,56 @@ class ShapleySampler(ShapleyCalculator):
         raise NotImplementedError("""The ShapleySampler only has the `sample_all_shapley_values()` method.
                      To accuratly calculate the Shapley values,
                      please use the `ShapleyCalculator` class.""")
+
+    def calculate_single_shapley_value_with_sampling(self, node: int, grand_coalition: tuple,
+                                  coalitions: list[tuple], coalition_to_worth: dict) -> float:
+        """Calculate a single Shapley value using sampled coalitions. This leads
+            to worse results than the permutation based approached unless a large
+            portion of the coalitions is sampled.
+
+        Args:
+            node (int): Node index for which to calculate the Shapley value.
+            grand_coalition (tuple): Set of all players.
+            coalitions (list[tuple]): List of all coalitions.
+            coalition_to_worth (dict): Mapping of every coalition to its worth.
+
+        Returns:
+            float: Shapley value.
+        """
+        # TODO: look for potential improvement
+        sh = 0
+        size_grand_coalition = len(grand_coalition)
+        factorial_size_grand_coalition = math.factorial(size_grand_coalition)
+        for coalition in [S for S in coalitions if node not in S]:
+            coalition_with_node = tuple(sorted(coalition+(node,)))
+            if coalition_with_node in coalitions:
+                worth_of_coalition = coalition_to_worth[coalition]
+                worth_of_coalition_with_node = coalition_to_worth[coalition_with_node]
+
+                size_coalition = len(coalition)
+                prefactor = ((math.factorial(size_coalition)
+                            *math.factorial(size_grand_coalition-size_coalition-1))
+                            /factorial_size_grand_coalition)
+                sh += prefactor * (worth_of_coalition_with_node - worth_of_coalition)
+        return sh
+
+    def calculate_all_shapley_values_with_sampling(self) -> dict:
+        """Calculate the sampled Shapley values for every node / player in the
+            graph.  This leads to worse results than the permutation based
+            approached unless a large portion of the coalitions is sampled.
+
+
+        Returns:
+            dict: Mapping of each node index to the Shapley value.
+        """
+        self.sample_all_mappings()
+        self.log.warn(f"This sampling method performs worse than `sample_all_myerson_values` and might not sample uniformly.")
+        self.log.info(f"Calculating Shapley values.")
+        sh_values = {}
+        for node in tqdm(self.grand_coalition, desc="Calculating Shapley values.", disable=self.disable_tqdm):
+            sh_val = self.x_calculate_single_shapley_value(node, self.grand_coalition,
+                                                  self.coalitions, self.coalitions_to_worth)
+            sh_values.update({node: sh_val})
+        log_string = "".join([f"\t{k}: {v}\n" for k, v in sh_values.items()])
+        self.log.info(f"Shapley Values:\n{log_string}")
+        return sh_values
