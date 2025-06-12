@@ -312,6 +312,7 @@ class MyersonClassExplainer(MyersonExplainer):
 
         self.nx_graph = torch_geometric.utils.to_networkx(graph, to_undirected=True)
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
+        self.pred = self.calculate_prediction()
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
             self.log.warn(f"Your graph has {cc} individual components. The worth"
@@ -339,7 +340,7 @@ class MyersonClassExplainer(MyersonExplainer):
             subgraph. 
         """
         if graph_restricted_coalition == ():
-            return 0.
+            return torch.zeros(self.pred.shape)
         subgraph = self.subgraph_from_coalition(graph_restricted_coalition, pyg_graph)
         out = self.coalition_function(subgraph.x, subgraph.edge_index, self._batch_var(subgraph))
         
