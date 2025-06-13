@@ -98,12 +98,12 @@ class MyersonExplainer(MyersonCalculator):
         return out.cpu().item()
 
     def calculate_worth_of_graph_restricted_coalitions(self,
-        graph_restricted_coalitions: set) -> dict:
+        graph_restricted_coalitions: list) -> dict:
         """Calculate the worth of every graph restricted coalition and map it to
         its worth. 
 
         Args:
-            graph_restricted_coalitions (set): Set of connected components as
+            graph_restricted_coalitions (list): Set of connected components as
                 tuples of node indices.
 
         Returns:

@@ -82,11 +82,11 @@ class ShapleyCalculator():
         """
         return self.coalition_function(coalition, nx_graph)
 
-    def calculate_worth_of_coalitions(self, coalitions: set) -> dict:
+    def calculate_worth_of_coalitions(self, coalitions: list) -> dict:
         """Calculate the worth of every coalition and map it to its worth. 
 
         Args:
-            coalitions (set): Set of coalitions as tuples of node indices.
+            coalitions (list): Set of coalitions as tuples of node indices.
 
         Returns:
             dict: Dictionary mapping each coalition to its worth.
