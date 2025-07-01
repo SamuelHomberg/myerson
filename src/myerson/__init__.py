@@ -12,6 +12,8 @@ try:
 
     from .shapley_explain import ShapleyExplainer, ShapleySamplingExplainer
     from .shapley_explain import ShapleyClassExplainer, ShapleySamplingClassExplainer
+
+    from .perturbation_explain import PerturbationExplainer, PerturbationClassExplainer
 except ImportError:
     warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
 
