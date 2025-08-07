@@ -17,7 +17,7 @@ classifiers = [
 ]
 dependencies = [
   'tqdm', 
-  'numpy >= 1.25, < 2',
+  'numpy >= 1.25',
   'networkx >= 3.1',
 ]
 
