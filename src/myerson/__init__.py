@@ -6,14 +6,14 @@ import warnings
 try:
     import torch
     import torch_geometric
-    from .myerson_explain import MyersonExplainer, MyersonSamplingExplainer
-    from .myerson_explain import MyersonClassExplainer, MyersonSamplingClassExplainer
-    from .myerson_explain import explain
+    from .explain.myerson_explain import MyersonExplainer, MyersonSamplingExplainer
+    from .explain.myerson_explain import MyersonClassExplainer, MyersonSamplingClassExplainer
+    from .explain.myerson_explain import explain
 
-    from .shapley_explain import ShapleyExplainer, ShapleySamplingExplainer
-    from .shapley_explain import ShapleyClassExplainer, ShapleySamplingClassExplainer
+    from .explain.shapley_explain import ShapleyExplainer, ShapleySamplingExplainer
+    from .explain.shapley_explain import ShapleyClassExplainer, ShapleySamplingClassExplainer
 
-    from .perturbation_explain import PerturbationExplainer, PerturbationClassExplainer
+    from .explain.perturbation_explain import PerturbationExplainer, PerturbationClassExplainer
 except ImportError:
     warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
 
