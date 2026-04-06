@@ -1,5 +1,5 @@
 import unittest
-from myerson import PerturbationExplainer, PerturbationClassExplainer
+from myerson.pyg_explain import PerturbationExplainer, PerturbationClassExplainer
 import torch
 from .testmodels import GATConvModel
 from .utils import rename_state_dict_keys, create_complete_graph_edges

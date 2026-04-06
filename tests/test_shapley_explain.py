@@ -1,7 +1,7 @@
 import unittest
-from myerson import ShapleyExplainer, ShapleySamplingExplainer
-from myerson import ShapleyClassExplainer, ShapleySamplingClassExplainer
-from myerson import MyersonExplainer, MyersonClassExplainer
+from myerson.pyg_explain import ShapleyExplainer, ShapleySamplingExplainer
+from myerson.pyg_explain import ShapleyClassExplainer, ShapleySamplingClassExplainer
+from myerson.pyg_explain import MyersonExplainer, MyersonClassExplainer
 import torch
 from .testmodels import GATConvModel
 from .utils import rename_state_dict_keys, create_complete_graph_edges

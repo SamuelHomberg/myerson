@@ -1,6 +1,6 @@
 import unittest
-from myerson import MyersonExplainer, MyersonClassExplainer
-from myerson import MyersonSamplingExplainer, MyersonSamplingClassExplainer
+from myerson.pyg_explain import MyersonExplainer, MyersonClassExplainer
+from myerson.pyg_explain import MyersonSamplingExplainer, MyersonSamplingClassExplainer
 import torch
 from .testmodels import GATConvModel
 from .utils import rename_state_dict_keys
