@@ -7,22 +7,19 @@ import logging
 log = logging.getLogger(__name__)
 
 try:
-    import torch
+    import torch #type: ignore
 except ImportError:
     logging.warning("Failed to import torch. Explanations not available.")
 try:
-    import torch_geometric
+    import torch_geometric #type: ignore
     from . import pyg_explain
 except ImportError:
     logging.warning("Failed to import torch_geometric. PyG explanations not available.")
 try:
-    import chemprop
+    import chemprop #type: ignore
     from . import chemprop_explain
 except ImportError:
     logging.warning("Failed to import chemprop. MPNN explanations not available.")
-
-except ImportError:
-    logging.warning("Failed to import torch and/or torch_geometric. Explanations not available.")
 
 __all__ = [
     "MyersonCalculator",
