@@ -68,8 +68,9 @@ class MyersonExplainer(MyersonCalculator):
         if graph_restricted_coalition == ():
             return 0.
         subgraph = self.subgraph_from_coalition(graph_restricted_coalition, molgraph)
-        out = self.coalition_function(BatchMolGraph([subgraph]))
-        
+        subgraph = BatchMolGraph([subgraph])
+        subgraph.to(self.coalition_function.device)
+        out = self.coalition_function(subgraph)
         return out.cpu().item()
 
     def calculate_worth_of_graph_restricted_coalitions(self,
@@ -121,7 +122,9 @@ class MyersonExplainer(MyersonCalculator):
         Returns:
             float: Prediction.
         """
-        return self.coalition_function(BatchMolGraph([self.molgraph])).cpu().item()
+        input = BatchMolGraph([self.molgraph])
+        input.to(self.coalition_function.device)
+        return self.coalition_function(input).cpu().item()
 
     def subgraph_from_coalition(self, graph_restricted_coalition: tuple, 
                                 molgraph: MolGraph) -> MolGraph:
@@ -258,7 +261,9 @@ class MyersonClassExplainer(MyersonExplainer):
         if graph_restricted_coalition == ():
             return torch.zeros(self.pred.shape)
         subgraph = self.subgraph_from_coalition(graph_restricted_coalition, molgraph)
-        out = self.coalition_function(BatchMolGraph([subgraph]))
+        subgraph = BatchMolGraph([subgraph])
+        subgraph.to(self.coalition_function.device)
+        out = self.coalition_function(subgraph)
         
         return out.detach().cpu()
 
@@ -270,7 +275,9 @@ class MyersonClassExplainer(MyersonExplainer):
         Returns:
             torch.Tensor: Prediction.
         """
-        return self.coalition_function(BatchMolGraph([self.molgraph])).detach().cpu()
+        input = BatchMolGraph([self.molgraph])
+        input.to(self.coalition_function.device)
+        return self.coalition_function(input).cpu().item()
 
 
 class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplainer):
