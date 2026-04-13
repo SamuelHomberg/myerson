@@ -16,7 +16,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  'tqdm', 
+  'tqdm',
   'numpy >= 1.25',
   'networkx >= 3.1',
 ]
@@ -38,6 +38,22 @@ chemprop = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.uv.workspace]
+members = [
+    ".",
+]
+
+[tool.uv.sources]
+myerson = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "myerson[chemprop,explain,test]",
+    "ipykernel",
+    "jupyter",
+    "matplotlib",
+]
 
 [project.urls]
 Source = "https://github.com/kochgroup/myerson"
