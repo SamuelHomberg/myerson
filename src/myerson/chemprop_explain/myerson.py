@@ -1,6 +1,11 @@
 import logging
 import networkx as nx
 import numpy as np
+
+try:
+    import chemprop
+except ImportError:
+    raise ImportError("Failed to import chemprop. MPNN explanations not available.")
 import torch
 from tqdm import tqdm
 

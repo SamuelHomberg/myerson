@@ -1,5 +1,8 @@
-import torch
-import torch_geometric
+try:
+    import torch
+    import torch_geometric
+except ImportError:
+    raise ImportError("Failed to import torch and/or torch_geometric. PyG explanations not available.")
 
 from tqdm import tqdm
 import logging

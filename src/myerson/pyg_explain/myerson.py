@@ -1,7 +1,10 @@
 from myerson import MyersonCalculator, MyersonSampler
 
-import torch
-import torch_geometric
+try:
+    import torch
+    import torch_geometric
+except ImportError:
+    raise ImportError("Failed to import torch and/or torch_geometric. PyG explanations not available.")
 import numpy as np
 
 import networkx as nx
