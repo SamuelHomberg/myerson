@@ -277,7 +277,7 @@ class MyersonClassExplainer(MyersonExplainer):
         """
         input = BatchMolGraph([self.molgraph])
         input.to(self.coalition_function.device)
-        return self.coalition_function(input).cpu().item()
+        return self.coalition_function(input).cpu()
 
 
 class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplainer):
