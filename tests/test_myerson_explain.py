@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import torch
 from myerson.pyg_explain import MyersonExplainer, MyersonClassExplainer
 from myerson.pyg_explain import MyersonSamplingExplainer, MyersonSamplingClassExplainer
@@ -21,16 +22,18 @@ def regression_setup(device):
     with open("tests/testgraph.pt", "rb") as f:
         graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
-    solution = {0: 0.3334993031053314,
-                1: 0.32414250585531335,
-                2: 0.09926704892090386,
-                3: -0.235700370016553,
-                4: 0.32414250134948625,
-                5: 0.3334992930174817,
-                6: 0.2064565007175723,
-                7: 0.14213201623587385,
-                8: -0.12044816162614626,
-                9: 0.11972642920556467}
+    solution = np.array([
+        0.3334993031053314,
+        0.32414250585531335,
+        0.09926704892090386,
+        -0.235700370016553,
+        0.32414250134948625,
+        0.3334992930174817,
+        0.2064565007175723,
+        0.14213201623587385,
+        -0.12044816162614626,
+        0.11972642920556467
+        ])
     
     return model, graph, solution
 
@@ -44,16 +47,18 @@ def classification_setup(device):
     with open("tests/testgraph.pt", "rb") as f:
         graph = torch.load(f, map_location=torch.device(device), weights_only=False)
 
-    solution = {0: torch.tensor([[-0.1079,  0.0471, -0.0231]]),
-                1: torch.tensor([[-0.1079,  0.0464, -0.0229]]),
-                2: torch.tensor([[-0.1230,  0.0496, -0.0087]]),
-                3: torch.tensor([[-0.1097,  0.0562, -0.0421]]),
-                4: torch.tensor([[-0.1079,  0.0464, -0.0229]]),
-                5: torch.tensor([[-0.1079,  0.0471, -0.0231]]),
-                6: torch.tensor([[-0.1090,  0.0511, -0.0247]]),
-                7: torch.tensor([[-0.0823,  0.0611, -0.0204]]),
-                8: torch.tensor([[-0.1285,  0.0739, -0.0161]]),
-                9: torch.tensor([[-0.0874,  0.0686, -0.0289]])}
+    solution = np.array([
+        [-0.1079,  0.0471, -0.0231],
+        [-0.1079,  0.0464, -0.0229],
+        [-0.1230,  0.0496, -0.0087],
+        [-0.1097,  0.0562, -0.0421],
+        [-0.1079,  0.0464, -0.0229],
+        [-0.1079,  0.0471, -0.0231],
+        [-0.1090,  0.0511, -0.0247],
+        [-0.0823,  0.0611, -0.0204],
+        [-0.1285,  0.0739, -0.0161],
+        [-0.0874,  0.0686, -0.0289]
+        ])
 
     return model, graph, solution
 
@@ -74,7 +79,7 @@ class TestMyersonExplainer:
         explainer = MyersonExplainer(graph, model)
         # explainer.set_restrict(use_fast_restrict=False)
         my_values = explainer.calculate_all_myerson_values()
-        for my, sol in zip(my_values.values(), solution.values()):
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-5), f"{my_values=}, {solution=}"
 
 
@@ -94,7 +99,7 @@ class TestMyersonSamplingExplainer:
         sampler = MyersonSamplingExplainer(graph, model, seed=42)
         # sampler.set_restrict(use_fast_restrict=False)
         my_values = sampler.sample_all_myerson_values()
-        for my, sol in zip(my_values.values(), solution.values()):
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-1), f"{my_values=}, {solution=}"
 
 
@@ -105,8 +110,8 @@ class TestMyersonClassExplainer:
         explainer = MyersonClassExplainer(graph, model)
         # sampler.set_restrict(use_fast_restrict=False)
         my_values = explainer.calculate_all_myerson_values()
-        for my, sol in zip(my_values.values(), solution.values()):
-            assert torch.allclose(my, sol, atol=0.0001), f"{my_values=}, {solution=}"
+        for my, sol in zip(my_values, solution):
+            assert np.allclose(my, sol, atol=0.0001), f"{my_values=}, {solution=}"
 
 
 class TestMyersonSamplingClassExplainer:
@@ -116,6 +121,5 @@ class TestMyersonSamplingClassExplainer:
         sampler = MyersonSamplingClassExplainer(graph, model, seed=42)
         # sampler.set_restrict(use_fast_restrict=False)
         my_values = sampler.sample_all_myerson_values()
-        for my, sol in zip(my_values.values(), solution.values()):
-            my = torch.tensor(my, dtype=torch.float32)
-            assert torch.allclose(my, sol, atol=0.01), f"{my_values=}, {solution=}"
+        for my, sol in zip(my_values, solution):
+            assert np.allclose(my, sol, atol=0.01), f"{my_values=}, {solution=}"

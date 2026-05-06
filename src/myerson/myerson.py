@@ -246,20 +246,21 @@ class MyersonCalculator():
             my += prefactor * (worth_of_coalition_with_node - worth_of_coalition)
         return my
 
-    def calculate_all_myerson_values(self) -> dict:
+    def calculate_all_myerson_values(self) -> np.ndarray:
         """Calculate the Myerson values for every node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the Myerson value.
+            np.ndarray: Myerson values for each node.
         """
         self.calculate_all_mappings()
         self.log.info(f"Calculating Myerson values.")
-        my_values = {}
+        my_values = []
         for node in tqdm(self.grand_coalition, desc="Calculating Myerson values.", disable=self.disable_tqdm):
             my_val = self.calculate_single_myerson_value(node, self.grand_coalition,
                                                   self.coalitions, self.coalitions_to_worth)
-            my_values.update({node: my_val})
-        log_string = "".join([f"\t{k}: {v}\n" for k, v in my_values.items()])
+            my_values.append(my_val)
+        my_values = np.array(my_values)
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, my_values)])
         self.log.info(f"Myerson Values:\n{log_string}")
         return my_values
 
@@ -442,12 +443,12 @@ class MyersonSampler(MyersonCalculator):
                                           self.coalitions_to_graph_restricted_coalitions,
                                           self.graph_restricted_coalitions_to_worth)
 
-    def sample_all_myerson_values(self) -> dict:
+    def sample_all_myerson_values(self) -> np.ndarray:
         """Use Monte Carlo sampling to approximate the Myerson values for every
         node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the sampled Myerson value.
+            np.ndarray: Sampled Myerson values for each node.
         """
         self.sample_all_mappings()
         nodes_array = np.array(self.grand_coalition)
@@ -469,8 +470,7 @@ class MyersonSampler(MyersonCalculator):
                 my_values[node_idx] = (my_values[node_idx] + worth_with_node - worth_without_node)
 
         my_values = my_values / self.number_of_samples
-        my_values = {i: float(my_i) for i, my_i in enumerate(my_values)}
-        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in my_values.items()])
+        log_string = "".join([f"\t{node}: {val:.4f}\n" for node, val in zip(self.grand_coalition, my_values)])
         self.log.info(f"Sampled Myerson Values:\n{log_string}")
         return my_values
 

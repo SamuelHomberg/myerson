@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import networkx as nx
 from myerson import MyersonCalculator, MyersonSampler
 
@@ -40,8 +41,8 @@ class TestMyersonCalculator:
         myerson_calculator = MyersonCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function)
         my_values = myerson_calculator.calculate_all_myerson_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0.}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0.])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-5), f"{my_values=}, {solution=}"
 
     def test_gloves_game_case1(self):
@@ -56,8 +57,8 @@ class TestMyersonCalculator:
         myerson_calculator = MyersonCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function)
         my_values = myerson_calculator.calculate_all_myerson_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0., 4: 0.}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0., 0.])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-5), f"{my_values=}, {solution=}"
 
     def test_gloves_game_case2(self):
@@ -70,8 +71,8 @@ class TestMyersonCalculator:
         myerson_calculator = MyersonCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function)
         my_values = myerson_calculator.calculate_all_myerson_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-5), f"{my_values=}, {solution=}"
 
 
@@ -92,8 +93,8 @@ class TestMyersonSampler:
             seed=42,
             disable_tqdm=True)
         my_values = sampler.sample_all_myerson_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0.}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0.])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-1), f"{my_values=}, {solution=}"
 
     def test_gloves_game_case1(self):
@@ -111,8 +112,8 @@ class TestMyersonSampler:
             seed=42,
             disable_tqdm=True)
         my_values = sampler.sample_all_myerson_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0., 4: 0.}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0., 0.])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-1), f"{my_values=}, {solution=}"
 
     def test_gloves_game_case2(self):
@@ -129,6 +130,6 @@ class TestMyersonSampler:
             seed=42,
             disable_tqdm=True)
         my_values = sampler.sample_all_myerson_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for my, sol in zip(my_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for my, sol in zip(my_values, solution):
             assert my == pytest.approx(sol, abs=1e-1), f"{my_values=}, {solution=}"

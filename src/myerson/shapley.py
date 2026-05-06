@@ -140,20 +140,21 @@ class ShapleyCalculator():
             sh += prefactor * (worth_of_coalition_with_node - worth_of_coalition)
         return sh
 
-    def calculate_all_shapley_values(self) -> dict:
+    def calculate_all_shapley_values(self) -> np.ndarray:
         """Calculate the Shapley values for every node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the Shapley value.
+            np.ndarray: Shapley values for each node.
         """
         self.calculate_all_mappings()
         self.log.info(f"Calculating Shapley values.")
-        sh_values = {}
+        sh_values = []
         for node in tqdm(self.grand_coalition, desc="Calculating Shapley values.", disable=self.disable_tqdm):
             sh_val = self.calculate_single_shapley_value(node, self.grand_coalition,
                                                   self.coalitions, self.coalitions_to_worth)
-            sh_values.update({node: sh_val})
-        log_string = "".join([f"\t{k}: {v}\n" for k, v in sh_values.items()])
+            sh_values.append(sh_val)
+        sh_values = np.array(sh_values)
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, sh_values)])
         self.log.info(f"Shapley Values:\n{log_string}")
         return sh_values
 
@@ -313,12 +314,12 @@ class ShapleySampler(ShapleyCalculator):
 
         self.coalitions_to_worth = self.calculate_worth_of_coalitions(self.coalitions)
 
-    def sample_all_shapley_values(self) -> dict:
+    def sample_all_shapley_values(self) -> np.ndarray:
         """Use Monte Carlo sampling to approximate the Shapley values for every
         node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the sampled Shapley value.
+            np.ndarray: Sampled Shapley values.
         """
         self.sample_all_mappings()
         nodes_array = np.array(self.grand_coalition)
@@ -340,8 +341,7 @@ class ShapleySampler(ShapleyCalculator):
                 sh_values[node_idx] = (sh_values[node_idx] + worth_with_node - worth_without_node)
 
         sh_values = sh_values / self.number_of_samples
-        sh_values = {i: float(sh_i) for i, sh_i in enumerate(sh_values)}
-        log_string = "".join([f"\t{k}: {v:.4f}\n" for k, v in sh_values.items()])
+        log_string = "".join([f"\t{node}: {val:.4f}\n" for node, val in zip(self.grand_coalition, sh_values)])
         self.log.info(f"Sampled Shapley Values:\n{log_string}")
         return sh_values
 
@@ -389,23 +389,24 @@ class ShapleySampler(ShapleyCalculator):
                 sh += prefactor * (worth_of_coalition_with_node - worth_of_coalition)
         return sh
 
-    def calculate_all_shapley_values_with_sampling(self) -> dict:
+    def calculate_all_shapley_values_with_sampling(self) -> np.ndarray:
         """Calculate the sampled Shapley values for every node / player in the
             graph.  This leads to worse results than the permutation based
             approached unless a large portion of the coalitions is sampled.
 
 
         Returns:
-            dict: Mapping of each node index to the Shapley value.
+            np.ndarray: Shapley values.
         """
         self.sample_all_mappings()
-        self.log.warn(f"This sampling method performs worse than `sample_all_myerson_values` and might not sample uniformly.")
+        self.log.warning(f"This sampling method performs worse than `sample_all_myerson_values` and might not sample uniformly.")
         self.log.info(f"Calculating Shapley values.")
-        sh_values = {}
+        sh_values = []
         for node in tqdm(self.grand_coalition, desc="Calculating Shapley values.", disable=self.disable_tqdm):
-            sh_val = self.x_calculate_single_shapley_value(node, self.grand_coalition,
+            sh_val = self.calculate_single_shapley_value(node, self.grand_coalition,
                                                   self.coalitions, self.coalitions_to_worth)
-            sh_values.update({node: sh_val})
-        log_string = "".join([f"\t{k}: {v}\n" for k, v in sh_values.items()])
+            sh_values.append(sh_val)
+        sh_values = np.array(sh_values)
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, sh_values)])
         self.log.info(f"Shapley Values:\n{log_string}")
         return sh_values

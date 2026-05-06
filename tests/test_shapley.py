@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import networkx as nx
 from myerson import ShapleyCalculator, ShapleySampler
 
@@ -40,8 +41,8 @@ class TestShapleyCalculator:
         shapley_calculator = ShapleyCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function, disable_tqdm=False)
         sh_values = shapley_calculator.calculate_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-5), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case1(self):
@@ -56,8 +57,8 @@ class TestShapleyCalculator:
         shapley_calculator = ShapleyCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function, disable_tqdm=False)
         sh_values = shapley_calculator.calculate_all_shapley_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0.5, 4: 0.5}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0.5, 0.5])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-5), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case2(self):
@@ -70,8 +71,8 @@ class TestShapleyCalculator:
         shapley_calculator = ShapleyCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function, disable_tqdm=False)
         sh_values = shapley_calculator.calculate_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-5), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case3(self):
@@ -83,8 +84,8 @@ class TestShapleyCalculator:
         shapley_calculator = ShapleyCalculator(graph=graph,
             coalition_function=gloves_game_coalition_function, disable_tqdm=False)
         sh_values = shapley_calculator.calculate_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-5), f"{sh_values=}, {solution=}"
 
 
@@ -105,8 +106,8 @@ class TestShapleySampler:
             seed=42,
             disable_tqdm=True)
         sh_values = shapley_sampler.sample_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-1), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case1(self):
@@ -124,8 +125,8 @@ class TestShapleySampler:
             seed=42,
             disable_tqdm=True)
         sh_values = shapley_sampler.sample_all_shapley_values()
-        solution = {1: 0.5, 2: 0.5, 3: 0.5, 4: 0.5}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([0.5, 0.5, 0.5, 0.5])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-1), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case2(self):
@@ -141,8 +142,8 @@ class TestShapleySampler:
             seed=42,
             disable_tqdm=True)
         sh_values = shapley_sampler.sample_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-1), f"{sh_values=}, {solution=}"
 
     def test_gloves_game_case3(self):
@@ -157,6 +158,6 @@ class TestShapleySampler:
             seed=42,
             disable_tqdm=True)
         sh_values = shapley_sampler.sample_all_shapley_values()
-        solution = {1: 2/3, 2: 1/6, 3: 1/6}
-        for sh, sol in zip(sh_values.values(), solution.values()):
+        solution = np.array([2/3, 1/6, 1/6])
+        for sh, sol in zip(sh_values, solution):
             assert sh == pytest.approx(sol, abs=1e-1), f"{sh_values=}, {solution=}"

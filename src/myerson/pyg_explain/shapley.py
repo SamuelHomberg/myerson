@@ -267,12 +267,12 @@ class ShapleySamplingClassExplainer(ShapleySamplingExplainer, ShapleyClassExplai
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
         self.pred = self.calculate_prediction()
     
-    def sample_all_shapley_values(self) -> dict:
+    def sample_all_shapley_values(self) -> np.ndarray:
         """Use Monte Carlo sampling to approximate the Shapley values for every
         node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the sampled Shapley value.
+            np.ndarray: Sampled Shapley values.
         """
         self.sample_all_mappings()
         pred = self.calculate_prediction()
@@ -295,7 +295,6 @@ class ShapleySamplingClassExplainer(ShapleySamplingExplainer, ShapleyClassExplai
                 sh_values[node_idx] = (sh_values[node_idx] + worth_with_node.numpy().squeeze() - worth_without_node.numpy().squeeze())
 
         sh_values = sh_values / self.number_of_samples
-        sh_values = {i: sh_i for i, sh_i in enumerate(sh_values)}
-        log_string = "".join([f"\t{k}: {v}\n" for k, v in sh_values.items()])
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, sh_values)])
         self.log.info(f"Sampled Shapley Values:\n{log_string}")
         return sh_values

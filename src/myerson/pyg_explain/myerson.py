@@ -428,12 +428,12 @@ class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplai
             coalition_to_worth.update({coalition: worth})
         return coalition_to_worth
     
-    def sample_all_myerson_values(self) -> dict:
+    def sample_all_myerson_values(self) -> np.ndarray:
         """Use Monte Carlo sampling to approximate the Myerson values for every
         node / player in the graph.
 
         Returns:
-            dict: Mapping of each node index to the sampled Myerson value.
+            np.ndarray: Sampled Myerson values.
         """
         self.sample_all_mappings()
         pred = self.calculate_prediction()
@@ -456,8 +456,7 @@ class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplai
                 my_values[node_idx] = (my_values[node_idx] + worth_with_node.numpy().squeeze() - worth_without_node.numpy().squeeze())
 
         my_values = my_values / self.number_of_samples
-        my_values = {i: my_i for i, my_i in enumerate(my_values)}
-        log_string = "".join([f"\t{k}: {v}\n" for k, v in my_values.items()])
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, my_values)])
         self.log.info(f"Sampled Myerson Values:\n{log_string}")
         return my_values
 

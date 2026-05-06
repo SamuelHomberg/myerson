@@ -3,7 +3,7 @@ try:
     import torch_geometric
 except ImportError:
     raise ImportError("Failed to import torch and/or torch_geometric. PyG explanations not available.")
-
+import numpy as np
 from tqdm import tqdm
 import logging
 
@@ -58,23 +58,24 @@ class PerturbationExplainer():
         """
         return torch.zeros(pyg_graph.x.shape[0], dtype=int, device=pyg_graph.x.device)
 
-    def calculate_all_perturbation_values(self):
+    def calculate_all_perturbation_values(self) -> np.ndarray:
         """Calculate the perturbation values for every node / player in the graph.
            The explanations are calculated as the difference between the worth of 
            the grand coalition and the worth of the graph without the node of interest.
 
         Returns:
-            dict: Mapping of each node index to the perturbation value.
+            np.ndarray: Perturbation values.
         """
         self.log.info(f"Calculating perturbation values.")
-        perturbation_values = {}
+        perturbation_values = []
         with torch.no_grad():
             for i, node in enumerate(tqdm(self.grand_coalition, desc="Calculating perturbation values.", disable=self.disable_tqdm)):
                 coalition = tuple(self.grand_coalition[:i] + self.grand_coalition[i+1:])
                 worth_of_coalition = self.calculate_worth_of_single_coalition(coalition, self.pyg_graph)
                 pert_val = (self.pred - worth_of_coalition)
-                perturbation_values.update({node: pert_val})
-            log_string = "".join([f"\t{k}: {v}\n" for k, v in perturbation_values.items()])
+                perturbation_values.append(pert_val)
+            perturbation_values = np.array(perturbation_values)
+            log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, perturbation_values)])
             self.log.info(f"Perturbation Values:\n{log_string}")
         return perturbation_values
 

@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import torch
 from myerson.pyg_explain import PerturbationExplainer, PerturbationClassExplainer
 from .testmodels import GATConvModel
@@ -17,18 +18,18 @@ def regression_setup(device):
     with open("tests/testgraph.pt", "rb") as f:
         graph = torch.load(f, map_location=torch.device(device), weights_only=False)
     graph.edge_index = create_complete_graph_edges(graph.x.shape[0])
-    solution = {
-                0: -0.11366,
-                1: -0.11366,
-                2: -0.11123,
-                3: -0.14156,
-                4: -0.11366,
-                5: -0.11366,
-                6: -0.11123,
-                7: -0.07453,
-                8: -0.12062,
-                9: -0.07787,
-                }
+    solution = np.array([
+                -0.11366,
+                -0.11366,
+                -0.11123,
+                -0.14156,
+                -0.11366,
+                -0.11366,
+                -0.11123,
+                -0.07453,
+                -0.12062,
+                -0.07787,
+                ])
     return model, graph, solution
 
 
@@ -39,18 +40,18 @@ def classification_setup(device):
     with open("tests/testgraph.pt", "rb") as f:
         graph = torch.load(f, map_location=torch.device(device), weights_only=False)
     graph.edge_index = create_complete_graph_edges(graph.x.shape[0])
-    solution = {
-                0: torch.tensor([[-0.1137,  0.0520, -0.0139]]),
-                1: torch.tensor([[-0.1137,  0.0520, -0.0139]]),
-                2: torch.tensor([[-0.1112,  0.0462, -0.0268]]),
-                3: torch.tensor([[-0.1416,  0.0737, -0.0028]]),
-                4: torch.tensor([[-0.1137,  0.0520, -0.0139]]),
-                5: torch.tensor([[-0.1137,  0.0520, -0.0139]]),
-                6: torch.tensor([[-0.1112,  0.0462, -0.0268]]),
-                7: torch.tensor([[-0.0745,  0.0644, -0.0214]]),
-                8: torch.tensor([[-0.1206,  0.0754, -0.0202]]),
-                9: torch.tensor([[-0.0779,  0.0699, -0.0080]]),
-                }
+    solution = np.array([
+                [-0.1137,  0.0520, -0.0139],
+                [-0.1137,  0.0520, -0.0139],
+                [-0.1112,  0.0462, -0.0268],
+                [-0.1416,  0.0737, -0.0028],
+                [-0.1137,  0.0520, -0.0139],
+                [-0.1137,  0.0520, -0.0139],
+                [-0.1112,  0.0462, -0.0268],
+                [-0.0745,  0.0644, -0.0214],
+                [-0.1206,  0.0754, -0.0202],
+                [-0.0779,  0.0699, -0.0080],
+                ])
     return model, graph, solution
 
 
@@ -60,7 +61,7 @@ class TestPerturbationExplainer:
         model, graph, solution = regression_setup
         explainer = PerturbationExplainer(graph, model, disable_tqdm=False)
         perturbation_values = explainer.calculate_all_perturbation_values()
-        for xp, sol in zip(perturbation_values.values(), solution.values()):
+        for xp, sol in zip(perturbation_values, solution):
             assert xp == pytest.approx(sol, abs=1e-5), f"{perturbation_values=}, {solution=}"
 
 
@@ -72,5 +73,5 @@ class TestPerturbationClassExplainer:
         model, graph, solution = classification_setup
         explainer = PerturbationClassExplainer(graph, model, disable_tqdm=False)
         perturbation_values = explainer.calculate_all_perturbation_values()
-        for xp, sol in zip(perturbation_values.values(), solution.values()):
-            assert torch.allclose(xp, sol, atol=0.01), f"{perturbation_values=}, {solution=}"
+        for xp, sol in zip(perturbation_values, solution):
+            assert np.allclose(xp, sol, atol=0.01), f"{perturbation_values=}, {solution=}"
