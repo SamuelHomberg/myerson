@@ -1,4 +1,9 @@
 from .myerson import MyersonExplainer, MyersonSamplingExplainer
 from .myerson import MyersonClassExplainer, MyersonSamplingClassExplainer
 
-from . import callbacks
+__all__ = [
+    "MyersonExplainer",
+    "MyersonSamplingExplainer",
+    "MyersonClassExplainer",
+    "MyersonSamplingClassExplainer",
+]
