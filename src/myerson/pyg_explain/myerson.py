@@ -45,12 +45,12 @@ class MyersonExplainer(MyersonCalculator):
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred:.4f}, Worth={worth:.4f}")
+            self.log.warning(f"Prediction={pred:.4f}, Worth={worth:.4f}")
 
         # if "myerson.fast_restrict" in reversed(sys.modules):
         #     self.fast_restrict_available = True
@@ -269,12 +269,12 @@ class MyersonSamplingExplainer(MyersonSampler, MyersonExplainer):
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred:.4f}, Worth={worth:.4f}")
+            self.log.warning(f"Prediction={pred:.4f}, Worth={worth:.4f}")
 
         # if "myerson.cpp_graph_divide" in sys.modules:
         #     self.fast_restrict_available = True
@@ -315,12 +315,12 @@ class MyersonClassExplainer(MyersonExplainer):
         self.pred = self.calculate_prediction()
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred}, Worth={worth}")
+            self.log.warning(f"Prediction={pred}, Worth={worth}")
     
     def calculate_worth_of_single_graph_restricted_coalition(self, 
         graph_restricted_coalition: tuple,
@@ -394,12 +394,12 @@ class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplai
         self.pred = self.calculate_prediction()
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred}, Worth={worth}")
+            self.log.warning(f"Prediction={pred}, Worth={worth}")
 
     def map_coalition_to_worth(self, coalitions: list[tuple], 
                        coalitions_to_graph_restricted_coalitions: dict,
