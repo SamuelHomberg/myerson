@@ -156,7 +156,7 @@ Calculation of the three player example for the gloves game (:ref:`vide supra <g
     my_values = myerson_calculator.calculate_all_myerson_values()
 
     # calculate the Myerson values by sampling
-    myerson_sampler = MyersonSampler(graph=self.graph,
+    myerson_sampler = MyersonSampler(graph=graph,
         coalition_function=self.gloves_game_coalition_function,
         number_of_samples=1000,
         seed=42,
@@ -169,14 +169,14 @@ Calculation of the three player example for the gloves game (:ref:`vide supra <g
     print(f"Exact Myerson values: {my_values}")
     print(f"Sampled Myerson values: {my_values_sampled}")
 
-Explain a GNN Prediction
-^^^^^^^^^^^^^^^^^^^^^^^^
+Explain a PyG GNN Prediction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
     import torch
     import torch_geometric
-    from myerson import MyersonExplainer, MyersonSamplingExplainer
+    from myerson.pyg_explain import MyersonExplainer, MyersonSamplingExplainer
 
     # define or load a graph to be explained
     edge_index = torch.tensor([[0, 1, 1, 2],

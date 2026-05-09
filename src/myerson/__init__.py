@@ -1,13 +1,18 @@
 """A python package to calculate Myerson values from game theory and use them as explanations for graph neural networks."""
 
 from .myerson import MyersonCalculator, MyersonSampler
-import warnings
-try:
-    import torch
-    import torch_geometric
-    from .myerson_explain import MyersonExplainer, MyersonSamplingExplainer
-    from .myerson_explain import explain
-except ImportError:
-    warnings.warn("Failed to import torch and/or torch_geometric. Explanations not available.")
+from .shapley import ShapleyCalculator, ShapleySampler
+import logging
 
-__version__ = "0.1.8"
+log = logging.getLogger(__name__)
+
+__all__ = [
+    "MyersonCalculator",
+    "MyersonSampler",
+    "ShapleyCalculator",
+    "ShapleySampler",
+    "pyg_explain",
+    "chemprop_explain",
+]
+
+__version__ = "0.1.8" # update this

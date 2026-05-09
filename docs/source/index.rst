@@ -14,8 +14,8 @@ related to Shapley values but the player cooperation is restricted by a graph.
 
 A graph neural network (GNN) can be treated as a coalition function for a game
 and the Myerson values can be used as feature attribution explanations to understand
-a model prediction. This package also implements Methods to explain `PyG <https://pyg.org//>`_ 
-GNNs with Myerson values.
+a model prediction. This package also implements methods to explain `PyG <https://pyg.org/>`_ 
+GNNs and `Chemprop <https://chemprop.readthedocs.io/>`_ models with Myerson values.
 
 Calculating the Myerson value scales exponentially with bigger graphs / more players.
 Therfore, Monte Carlo sampling techniques were implemented to approximate the Myerson values.

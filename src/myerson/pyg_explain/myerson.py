@@ -1,7 +1,10 @@
 from myerson import MyersonCalculator, MyersonSampler
 
-import torch
-import torch_geometric
+try:
+    import torch
+    import torch_geometric
+except ImportError:
+    raise ImportError("Failed to import torch and/or torch_geometric. PyG explanations not available.")
 import numpy as np
 
 import networkx as nx
@@ -45,12 +48,12 @@ class MyersonExplainer(MyersonCalculator):
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred:.4f}, Worth={worth:.4f}")
+            self.log.warning(f"Prediction={pred:.4f}, Worth={worth:.4f}")
 
         # if "myerson.fast_restrict" in reversed(sys.modules):
         #     self.fast_restrict_available = True
@@ -98,12 +101,12 @@ class MyersonExplainer(MyersonCalculator):
         return out.cpu().item()
 
     def calculate_worth_of_graph_restricted_coalitions(self,
-        graph_restricted_coalitions: set) -> dict:
+        graph_restricted_coalitions: list) -> dict:
         """Calculate the worth of every graph restricted coalition and map it to
         its worth. 
 
         Args:
-            graph_restricted_coalitions (set): Set of connected components as
+            graph_restricted_coalitions (list): Set of connected components as
                 tuples of node indices.
 
         Returns:
@@ -269,12 +272,12 @@ class MyersonSamplingExplainer(MyersonSampler, MyersonExplainer):
         self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
         cc = nx.number_connected_components(self.nx_graph)
         if cc > 1:
-            self.log.warn(f"Your graph has {cc} individual components. The worth"
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
                         " of the grand coalition and the prediction of a GNN can"
                         " differ.")
             pred = self.calculate_prediction()
             worth = self.calculate_worth_of_grand_coalition()
-            self.log.warn(f"Prediction={pred:.4f}, Worth={worth:.4f}")
+            self.log.warning(f"Prediction={pred:.4f}, Worth={worth:.4f}")
 
         # if "myerson.cpp_graph_divide" in sys.modules:
         #     self.fast_restrict_available = True
@@ -282,6 +285,180 @@ class MyersonSamplingExplainer(MyersonSampler, MyersonExplainer):
         #     self.fast_restrict_available = False
         # self.set_restrict(self.fast_restrict_available)
 
+class MyersonClassExplainer(MyersonExplainer):
+    r"""Explains the prediction of a graph neural network (GNN) classifier with
+        Myerson values.  The GNN is treated as the coalition function of a game
+        and its prediction as the payoff of the game. The Myerson values show
+        how much each node of the graph contributed to the final prediction.
+
+    Args:
+        graph (torch_geometric.data.Data): The data instance that is to be explained.
+        coalition_function (torch.nn.Module): The GNN.
+        disable_tqdm (bool, optional): Disables progress bar. Defaults to True.
+    """
+
+    def __init__(self, 
+                graph: torch_geometric.data.Data,
+                coalition_function: torch.nn.Module,
+                disable_tqdm: bool=True) -> None:
+        """Instantiate the class.
+        """
+
+        self.disable_tqdm = disable_tqdm
+        self.log = logging.getLogger("MyersonClassExplainer")
+
+        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        self.log.info(f"using device {self.device}")
+        self.pyg_graph = graph.to(self.device)
+        self.coalition_function = coalition_function
+        self.coalition_function.to(self.device)
+
+        self.nx_graph = torch_geometric.utils.to_networkx(graph, to_undirected=True)
+        self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
+        self.pred = self.calculate_prediction()
+        cc = nx.number_connected_components(self.nx_graph)
+        if cc > 1:
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
+                        " of the grand coalition and the prediction of a GNN can"
+                        " differ.")
+            pred = self.calculate_prediction()
+            worth = self.calculate_worth_of_grand_coalition()
+            self.log.warning(f"Prediction={pred}, Worth={worth}")
+    
+    def calculate_worth_of_single_graph_restricted_coalition(self, 
+        graph_restricted_coalition: tuple,
+        pyg_graph: torch_geometric.data.Data) -> torch.tensor:
+        """Calculate the worth of a graph restricted coalition, i. e. a single
+        connected component.
+
+        Args:
+            graph_restricted_coalition (tuple): Graph restricted coalition as
+                node indices.
+            pyg_graph (torch_geometric.data.Data): Graph from which a subgraph
+                of the connected components will be extracted according to the
+                graph restricted coalition.
+
+        Returns:
+            tensor: Worth, the output of the coalition function for the connected
+            subgraph. 
+        """
+        if graph_restricted_coalition == ():
+            return torch.zeros(self.pred.shape)
+        subgraph = self.subgraph_from_coalition(graph_restricted_coalition, pyg_graph)
+        out = self.coalition_function(subgraph.x, subgraph.edge_index, self._batch_var(subgraph))
+        
+        return out.detach().cpu()
+
+    def calculate_prediction(self) -> torch.tensor:
+        """Calculate the prediction of the GNN for the investigated graph. When 
+        the graph is disconnected this prediction may differ from the worth 
+        of the grand coalition.
+
+        Returns:
+            float: Prediction.
+        """
+        return self.coalition_function(self.pyg_graph.x, self.pyg_graph.edge_index,
+                                    self._batch_var(self.pyg_graph)).cpu()
+
+
+class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplainer):
+    """A class explaining a GNNs classifier predictions with approximated Myerson values.
+
+    Args:
+        graph (torch_geometric.data.Data): The data instance that is to be explained.
+        coalition_function (torch.nn.Module): The GNN.
+        seed (None | int, optional): Seed for randomness. Defaults to None.
+        number_of_samples (int, optional): Number of sampling steps. Defaults to 1000.
+        disable_tqdm (bool, optional): Disables progress bar. Defaults to True.
+    """
+    def __init__(self,
+                graph: torch_geometric.data.Data,
+                coalition_function: torch.nn.Module,
+                seed: None | int = None, 
+                number_of_samples: int = 1000,
+                disable_tqdm: bool=True) -> None:
+        """Instantiates the class.
+        """
+        self.disable_tqdm = disable_tqdm
+        self.log = logging.getLogger("MyersonSamplingClassExplainer")
+
+        self.seed = seed
+        self.rng = np.random.default_rng(seed)
+        self.number_of_samples = number_of_samples
+
+        self.device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        self.log.info(f"using device {self.device}")
+        self.pyg_graph = graph.to(self.device)
+        self.coalition_function = coalition_function
+        self.coalition_function.to(self.device)
+
+        self.nx_graph = torch_geometric.utils.to_networkx(graph, to_undirected=True)
+        self.grand_coalition = list(self.nx_graph.nodes()) # alias: set of players / set of nodes / F
+        self.pred = self.calculate_prediction()
+        cc = nx.number_connected_components(self.nx_graph)
+        if cc > 1:
+            self.log.warning(f"Your graph has {cc} individual components. The worth"
+                        " of the grand coalition and the prediction of a GNN can"
+                        " differ.")
+            pred = self.calculate_prediction()
+            worth = self.calculate_worth_of_grand_coalition()
+            self.log.warning(f"Prediction={pred}, Worth={worth}")
+
+    def map_coalition_to_worth(self, coalitions: list[tuple], 
+                       coalitions_to_graph_restricted_coalitions: dict,
+                       graph_restricted_coalitions_to_worth: dict) -> dict:
+        """Map every coalition to its worth.
+
+        Args:
+            coalitions (list): List of all coalitions (2^{num_nodes}). 
+            coalitions_to_graph_restricted_coalitions (dict): Dictionary mapping
+                the coalitions to the corresponding graph restricted coalitions.
+            graph_restricted_coalitions_to_worth (dict): Dictionary mapping the 
+                graph restricted coalitions to their worth.
+
+        Returns:
+            dict: Dictionary mapping each coalition to its worth.
+        """
+        self.log.info(f"Mapping coalitions to worth.")
+        coalition_to_worth = {}
+        for coalition in tqdm(coalitions, desc="Mapping coalitions to worth", disable=self.disable_tqdm):
+            worth = torch.zeros(self.pred.shape)
+            for graph_restricted_coalition in coalitions_to_graph_restricted_coalitions[coalition]:
+                worth += graph_restricted_coalitions_to_worth[graph_restricted_coalition]
+            coalition_to_worth.update({coalition: worth})
+        return coalition_to_worth
+    
+    def sample_all_myerson_values(self) -> np.ndarray:
+        """Use Monte Carlo sampling to approximate the Myerson values for every
+        node / player in the graph.
+
+        Returns:
+            np.ndarray: Sampled Myerson values.
+        """
+        self.sample_all_mappings()
+        pred = self.calculate_prediction()
+        nodes_array = np.array(self.grand_coalition)
+        my_values = np.zeros((len(nodes_array), pred.shape[1]), dtype=float)
+        self.log.info(f"Calculating sampled Myerson values.")
+        for permutation in tqdm(self.permutations_without_random_node,
+                              disable=self.disable_tqdm,
+                              desc="Calculate sampled Myerson values"):
+            for node_idx, node in enumerate(nodes_array):
+
+                sampled_permutation_with_current_swapped_in_random_node = permutation.copy()
+                sampled_permutation_with_current_swapped_in_random_node \
+                    = self._replace_in_array(sampled_permutation_with_current_swapped_in_random_node,
+                                             node,
+                                             self.random_node)
+
+                worth_with_node = self.coalitions_to_worth[tuple(np.sort(np.append(sampled_permutation_with_current_swapped_in_random_node, node)))]
+                worth_without_node = self.coalitions_to_worth[tuple(np.sort(sampled_permutation_with_current_swapped_in_random_node))]
+                my_values[node_idx] = (my_values[node_idx] + worth_with_node.numpy().squeeze() - worth_without_node.numpy().squeeze())
+
+        my_values = my_values / self.number_of_samples
+        log_string = "".join([f"\t{node}: {val}\n" for node, val in zip(self.grand_coalition, my_values)])
+        self.log.info(f"Sampled Myerson Values:\n{log_string}")
+        return my_values
 
 def explain(graph: torch_geometric.data.Data,
             model: torch.nn.Module,
@@ -316,5 +493,3 @@ def explain(graph: torch_geometric.data.Data,
         logging.info("Calculating exact Myerson values.")
         explainer = MyersonExplainer(graph, model, disable_tqdm=disable_tqdm)
         return explainer.calculate_all_myerson_values()
-
-# TODO: multi class classification
