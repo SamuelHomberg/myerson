@@ -156,7 +156,7 @@ Calculation of the three player example for the gloves game (:ref:`vide supra <g
     my_values = myerson_calculator.calculate_all_myerson_values()
 
     # calculate the Myerson values by sampling
-    myerson_sampler = MyersonSampler(graph=self.graph,
+    myerson_sampler = MyersonSampler(graph=graph,
         coalition_function=self.gloves_game_coalition_function,
         number_of_samples=1000,
         seed=42,
