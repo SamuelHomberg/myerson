@@ -15,4 +15,4 @@ __all__ = [
     "chemprop_explain",
 ]
 
-__version__ = "0.1.8" # update this
+__version__ = "1.0.0" # update this
