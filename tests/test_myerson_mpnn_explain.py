@@ -21,7 +21,7 @@ def device():
 
 @pytest.fixture(scope="module")
 def regression_setup(device):
-    model = MPNN.load_from_checkpoint("tests/chemprop_regression.ckpt")
+    model = MPNN.load_from_checkpoint("tests/chemprop_regression.ckpt", map_location=device)
     dataset = MoleculeDataset([MoleculeDatapoint.from_smi("c1ccccc1O", [3.3])])
     graph = dataset[0].mg
 
@@ -40,7 +40,7 @@ def regression_setup(device):
 
 @pytest.fixture(scope="module")
 def classification_setup(device):
-    model = MPNN.load_from_checkpoint("tests/chemprop_multitask.ckpt")
+    model = MPNN.load_from_checkpoint("tests/chemprop_multitask.ckpt", map_location=device)
     dataset = MoleculeDataset([MoleculeDatapoint.from_smi("C#Cc1ccccc1O", [1, 0, 1])])
     graph = dataset[0].mg
     solution = np.array([
