@@ -2,6 +2,9 @@
 
 [![test](https://github.com/kochgroup/myerson/actions/workflows/test.yml/badge.svg)](https://github.com/kochgroup/myerson/actions/workflows/test.yml)
 [![Documentation Status](https://readthedocs.org/projects/myerson/badge/?version=latest)](https://myerson.readthedocs.io/en/latest/?badge=latest)
+[![DOI](https://zenodo.org/badge/770049272.svg)](https://doi.org/10.5281/zenodo.20107372)
+
+
 
 # Calculate Myerson values and explain GNNs
 
