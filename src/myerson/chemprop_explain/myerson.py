@@ -270,7 +270,7 @@ class MyersonClassExplainer(MyersonExplainer):
         subgraph.to(self.coalition_function.device)
         out = self.coalition_function(subgraph)
         
-        return out.detach().cpu()
+        return out.detach().cpu().squeeze(0)
 
     def calculate_prediction(self) -> torch.Tensor:
         """Calculate the prediction of the GNN for the investigated graph. When 
@@ -282,7 +282,7 @@ class MyersonClassExplainer(MyersonExplainer):
         """
         input = BatchMolGraph([self.molgraph])
         input.to(self.coalition_function.device)
-        return self.coalition_function(input).cpu()
+        return self.coalition_function(input).cpu().squeeze(0)
 
 
 class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplainer):
@@ -359,7 +359,7 @@ class MyersonSamplingClassExplainer(MyersonSamplingExplainer, MyersonClassExplai
         self.sample_all_mappings()
         pred = self.calculate_prediction()
         nodes_array = np.array(self.grand_coalition)
-        my_values = np.zeros((len(nodes_array), pred.shape[1]), dtype=float)
+        my_values = np.zeros((len(nodes_array), pred.shape[0]), dtype=float)
         self.log.info(f"Calculating sampled Myerson values.")
         for permutation in tqdm(self.permutations_without_random_node,
                               disable=self.disable_tqdm,
