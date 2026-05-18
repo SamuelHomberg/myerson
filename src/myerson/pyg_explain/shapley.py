@@ -220,7 +220,7 @@ class ShapleyClassExplainer(ShapleyExplainer):
         subgraph = self.subgraph_from_coalition(coalition, pyg_graph)
         out = self.coalition_function(subgraph.x, subgraph.edge_index, self._batch_var(subgraph))
         
-        return out.detach().cpu()
+        return out.detach().cpu().squeeze(0)
 
     def calculate_prediction(self) -> torch.tensor:
         """Calculate the prediction of the GNN for the investigated graph.
@@ -229,7 +229,7 @@ class ShapleyClassExplainer(ShapleyExplainer):
             float: Prediction.
         """
         return self.coalition_function(self.pyg_graph.x, self.pyg_graph.edge_index,
-                                    self._batch_var(self.pyg_graph)).cpu()
+                                    self._batch_var(self.pyg_graph)).cpu().squeeze(0)
 
 
 class ShapleySamplingClassExplainer(ShapleySamplingExplainer, ShapleyClassExplainer):
@@ -277,7 +277,7 @@ class ShapleySamplingClassExplainer(ShapleySamplingExplainer, ShapleyClassExplai
         self.sample_all_mappings()
         pred = self.calculate_prediction()
         nodes_array = np.array(self.grand_coalition)
-        sh_values = np.zeros((len(nodes_array), pred.shape[1]), dtype=float)
+        sh_values = np.zeros((len(nodes_array), pred.shape[0]), dtype=float)
         self.log.info(f"Calculating sampled Shapley values.")
         for permutation in tqdm(self.permutations_without_random_node,
                               disable=self.disable_tqdm,

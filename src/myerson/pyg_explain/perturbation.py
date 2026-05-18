@@ -169,7 +169,7 @@ class PerturbationClassExplainer(PerturbationExplainer):
         subgraph = self.subgraph_from_coalition(coalition, pyg_graph)
         out = self.coalition_function(subgraph.x, subgraph.edge_index, self._batch_var(subgraph))
         
-        return out.detach().cpu()
+        return out.detach().cpu().squeeze(0)
 
     def calculate_prediction(self) -> torch.tensor:
         """Calculate the prediction of the GNN for the investigated graph.
@@ -178,4 +178,4 @@ class PerturbationClassExplainer(PerturbationExplainer):
             float: Prediction.
         """
         return self.coalition_function(self.pyg_graph.x, self.pyg_graph.edge_index,
-                                    self._batch_var(self.pyg_graph)).cpu()
+                                    self._batch_var(self.pyg_graph)).cpu().squeeze(0)
